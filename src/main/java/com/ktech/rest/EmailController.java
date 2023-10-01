@@ -1,13 +1,12 @@
 package com.ktech.rest;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +14,7 @@ import com.ktech.dto.EmailRequest;
 import com.ktech.service.EmailService;
 
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @RestController
 public class EmailController {
@@ -32,27 +32,13 @@ public class EmailController {
 		}
 	}
 
-	@PostMapping("/send-email")
-	public ResponseEntity<String> sendEmailWithAttachment(@RequestBody EmailRequest emailRequest,
-			MultipartFile attachment) throws MessagingException {
+	@PostMapping("/send/attech")
+	public ResponseEntity<String> sendEmailWithAttachment(@RequestParam String to, @RequestParam String subject,
+			@RequestParam String text, @RequestParam MultipartFile attachment) throws MessagingException {
 		try {
-			// Save the attachment to a temporary file
-			File tempFile = File.createTempFile("temp", ".docx");
-			attachment.transferTo(tempFile);
-
-			// Send the email with the attachment
-//			emailService.sendEmailWithAttachment(emailRequest.getTo(), emailRequest.getSubject(),
-//					emailRequest.getBody(), tempFile);
-
-			emailService.sendEmailWithAttachment(emailRequest.getTo(), emailRequest.getSubject(),
-					emailRequest.getBody(), tempFile);
-
-			// Clean up the temporary file
-			tempFile.delete();
-
-			return ResponseEntity.ok("Email sent with attachment successfully.");
-		} catch (IOException e) {
-			e.printStackTrace();
+			emailService.sendEmailWithAttachment(to, subject, text, attachment);
+			return ResponseEntity.ok("Email sent successfully!");
+		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body("Failed to send email: " + e.getMessage());
 		}
